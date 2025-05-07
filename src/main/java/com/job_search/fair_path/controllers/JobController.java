@@ -1,0 +1,75 @@
+package com.job_search.fair_path.controllers;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.job_search.fair_path.dataTransferObject.JobResultDTO;
+import com.job_search.fair_path.entity.InclusiveCompanyEntity;
+import com.job_search.fair_path.repository.InclusiveCompanyRepository;
+
+@RestController
+@RequestMapping("/jobs")
+public class JobController {
+
+    private final JobService jobService;
+    @Autowired
+    private InclusiveCompanyRepository repo;
+
+    public JobController(JobService jobService) {
+        this.jobService = jobService;
+    }
+
+    @GetMapping // maps to http://localhost:8080/jobs?where=Dolly?titleOnly=someTitle
+    public List<JobResultDTO> getJobs(@RequestParam(required = false) String where,
+            @RequestParam(required = false) String titleOnly, @RequestParam(required = false) Integer salaryMin,
+            @RequestParam(required = false) String fullTime, @RequestParam(required = false) String partTime) {
+        List<JobResultDTO> jobs = new ArrayList<>();
+        String apiResponse = jobService.getJobs(where, titleOnly, salaryMin, fullTime, partTime);
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            JsonNode rootNode = mapper.readTree(apiResponse);
+            ArrayNode arrayNode = (ArrayNode) rootNode.get("results");
+
+            if (arrayNode != null) {
+                for (JsonNode node : arrayNode) {
+                    String title = node.get("title").asText();
+                    String companyName = node.path("company").path("display_name").asText();
+                    String dateCreated = node.get("created").asText();
+                    String locationDisplayName = node.path("location").path("display_name").asText();
+                    String locationState = node.get("location").get("area").get(1).asText();
+                    String locationCountry = node.get("location").get("area").get(0).asText();
+                    String location = new StringBuilder(
+                            locationDisplayName + ", " + locationState + " " + locationCountry).toString();
+                    String redirectUrl = node.get("redirect_url").asText();
+                    String jobDescription = node.get("description").asText();
+                    Double salary_min = node.get("salary_min").asDouble();
+                    Double salary_max = node.get("salary_max").asDouble();
+                    String companyNameUpperCase = companyName.toUpperCase();
+                    InclusiveCompanyEntity inclusiveCompany = repo.findById(companyNameUpperCase).orElse(null);
+                    Integer rating = null;
+                    if (inclusiveCompany != null)
+                        rating = inclusiveCompany.getRating();
+
+                    JobResultDTO job = new JobResultDTO(title, companyName, dateCreated, location, redirectUrl,
+                            jobDescription, salary_min, salary_max, rating);
+                    System.out.println(job);
+                    jobs.add(job);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return jobs;
+    }
+
+}
