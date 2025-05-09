@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -18,6 +19,7 @@ import com.job_search.fair_path.entity.InclusiveCompanyEntity;
 import com.job_search.fair_path.repository.InclusiveCompanyRepository;
 
 @RestController
+@CrossOrigin
 @RequestMapping("/jobs")
 public class JobController {
 
@@ -56,7 +58,7 @@ public class JobController {
                     Double salary_max = node.get("salary_max").asDouble();
                     String companyNameUpperCase = companyName.toUpperCase();
                     InclusiveCompanyEntity inclusiveCompany = repo.findById(companyNameUpperCase).orElse(null);
-                    Integer rating = null;
+                    Integer rating = 0;
                     if (inclusiveCompany != null)
                         rating = inclusiveCompany.getRating();
 
