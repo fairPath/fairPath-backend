@@ -22,7 +22,9 @@ public class JobService {
         this.restTemplate = builder.build();
     }
 
-    public String getJobs(String where, String titleOnly, Integer salaryMin, String fullTime, String partTime) {
+    public String getJobs(String where, String titleOnly, Integer salaryMin, String company, String fullTime,
+            String partTime,
+            String contract) {
         String url = adzunaApiUrl + "?app_id=" + appId + "&app_key=" + appKey;
         if (where != null && !where.isEmpty())
             url += "&where=" + where;
@@ -30,10 +32,14 @@ public class JobService {
             url += "&title_only=" + titleOnly;
         if (salaryMin != null && salaryMin != 0)
             url += "&salary_min=" + salaryMin;
+        if (company != null && !company.isEmpty())
+            url += "&company=" + company;
         if (fullTime != null && !fullTime.isEmpty())
             url += "&full_time=" + fullTime;
         if (partTime != null && !partTime.isEmpty())
             url += "&part_time=" + partTime;
+        if (contract != null && !contract.isEmpty())
+            url += "&contract=" + contract;
         url += "&results_per_page=120";
         System.out.println("titleOnly" + titleOnly);
         return restTemplate.getForObject(url, String.class);

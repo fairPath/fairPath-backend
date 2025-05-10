@@ -34,9 +34,11 @@ public class JobController {
     @GetMapping
     public List<JobResultDTO> getJobs(@RequestParam(required = false) String where,
             @RequestParam(required = false) String titleOnly, @RequestParam(required = false) Integer salaryMin,
-            @RequestParam(required = false) String fullTime, @RequestParam(required = false) String partTime) {
+            @RequestParam(required = false) String company,
+            @RequestParam(required = false) String fullTime, @RequestParam(required = false) String partTime,
+            @RequestParam(required = false) String contract) {
         List<JobResultDTO> jobs = new ArrayList<>();
-        String apiResponse = jobService.getJobs(where, titleOnly, salaryMin, fullTime, partTime);
+        String apiResponse = jobService.getJobs(where, titleOnly, salaryMin, company, fullTime, partTime, contract);
         ObjectMapper mapper = new ObjectMapper();
         try {
             JsonNode rootNode = mapper.readTree(apiResponse);
