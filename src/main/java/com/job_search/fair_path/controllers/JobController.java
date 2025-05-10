@@ -31,7 +31,7 @@ public class JobController {
         this.jobService = jobService;
     }
 
-    @GetMapping // maps to http://localhost:8080/jobs?where=Dolly?titleOnly=someTitle
+    @GetMapping
     public List<JobResultDTO> getJobs(@RequestParam(required = false) String where,
             @RequestParam(required = false) String titleOnly, @RequestParam(required = false) Integer salaryMin,
             @RequestParam(required = false) String fullTime, @RequestParam(required = false) String partTime) {
@@ -48,10 +48,9 @@ public class JobController {
                     String companyName = node.path("company").path("display_name").asText();
                     String dateCreated = node.get("created").asText();
                     String locationDisplayName = node.path("location").path("display_name").asText();
-                    String locationState = node.get("location").get("area").get(1).asText();
                     String locationCountry = node.get("location").get("area").get(0).asText();
                     String location = new StringBuilder(
-                            locationDisplayName + ", " + locationState + " " + locationCountry).toString();
+                            locationDisplayName + ", " + locationCountry).toString();
                     String redirectUrl = node.get("redirect_url").asText();
                     String jobDescription = node.get("description").asText();
                     Double salary_min = node.get("salary_min").asDouble();

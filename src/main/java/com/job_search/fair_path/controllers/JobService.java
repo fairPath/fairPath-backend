@@ -1,5 +1,6 @@
 package com.job_search.fair_path.controllers;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -9,14 +10,20 @@ public class JobService {
 
     private final RestTemplate restTemplate;
 
-    private final String adzunaApiUrl = "https://api.adzuna.com/v1/api/jobs/us/search/1?app_id=7d4f3da8&app_key=f35c5cdc4b2b9b5b65548f119d838916&results_per_page=120";
+    @Value("${APP_ID}")
+    private String appId;
+
+    @Value("${APP_KEY}")
+    private String appKey;
+
+    private final String adzunaApiUrl = "https://api.adzuna.com/v1/api/jobs/us/search/1";
 
     public JobService(RestTemplateBuilder builder) {
         this.restTemplate = builder.build();
     }
 
     public String getJobs(String where, String titleOnly, Integer salaryMin, String fullTime, String partTime) {
-        String url = adzunaApiUrl;
+        String url = adzunaApiUrl + "?app_id=" + appId + "&app_key=" + appKey;
         if (where != null && !where.isEmpty())
             url += "&where=" + where;
         if (titleOnly != null && !titleOnly.isEmpty())
@@ -27,6 +34,8 @@ public class JobService {
             url += "&full_time=" + fullTime;
         if (partTime != null && !partTime.isEmpty())
             url += "&part_time=" + partTime;
+        url += "&results_per_page=120";
+        System.out.println("titleOnly" + titleOnly);
         return restTemplate.getForObject(url, String.class);
     }
 }
