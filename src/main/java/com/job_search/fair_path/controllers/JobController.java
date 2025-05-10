@@ -2,6 +2,7 @@ package com.job_search.fair_path.controllers;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +39,7 @@ public class JobController {
             @RequestParam(required = false) String fullTime, @RequestParam(required = false) String partTime,
             @RequestParam(required = false) String contract) {
         List<JobResultDTO> jobs = new ArrayList<>();
+        List<String> ratingList = new ArrayList<>();
         String apiResponse = jobService.getJobs(where, titleOnly, salaryMin, company, fullTime, partTime, contract);
         ObjectMapper mapper = new ObjectMapper();
         try {
@@ -57,18 +59,25 @@ public class JobController {
                     String jobDescription = node.get("description").asText();
                     Double salary_min = node.get("salary_min").asDouble();
                     Double salary_max = node.get("salary_max").asDouble();
-                    String companyNameUpperCase = companyName.toUpperCase();
+                    String companyNameUpperCase = companyName.replaceAll("[^a-zA-Z ]", "").toUpperCase();
                     InclusiveCompanyEntity inclusiveCompany = repo.findById(companyNameUpperCase).orElse(null);
                     Integer rating = 0;
+
                     if (inclusiveCompany != null)
                         rating = inclusiveCompany.getRating();
 
                     JobResultDTO job = new JobResultDTO(title, companyName, dateCreated, location, redirectUrl,
                             jobDescription, salary_min, salary_max, rating);
                     System.out.println(job);
+
+                    if (rating > 0)
+                        ratingList.add(job.printRating());
+
                     jobs.add(job);
                 }
             }
+            Collections.sort(jobs);
+            System.out.println("rating list==========================" + ratingList.toString());
         } catch (IOException e) {
             e.printStackTrace();
         }

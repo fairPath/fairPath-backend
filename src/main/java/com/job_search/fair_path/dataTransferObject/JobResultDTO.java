@@ -1,6 +1,6 @@
 package com.job_search.fair_path.dataTransferObject;
 
-public class JobResultDTO {
+public class JobResultDTO implements Comparable<JobResultDTO> {
     private String title;
     private String companyName;
     private String dateCreated;
@@ -32,6 +32,17 @@ public class JobResultDTO {
                 + ", redirectUrl=" + redirectUrl + ", salaryMin="
                 + salaryMin + ", salaryMax=" + salaryMax + ", rating=" + rating +
                 '}';
+    }
+
+    public String printRating() {
+        return ">>>>>>>>>>>>>" +
+                ", companyName=" + companyName + ", rating=" + rating +
+                "<<<<<<<<<<<<<<<<<";
+    }
+
+    @Override
+    public int compareTo(JobResultDTO other) {
+        return Integer.compare(other.rating, this.rating); // Sort by rating
     }
 
     public String getTitle() {
