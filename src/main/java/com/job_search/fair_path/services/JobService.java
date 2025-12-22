@@ -1,4 +1,4 @@
-package com.job_search.fair_path.controllers;
+package com.job_search.fair_path.services;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
