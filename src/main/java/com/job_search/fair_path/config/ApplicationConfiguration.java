@@ -11,14 +11,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-/*
-    By default you will have the HTTP basic auth but we want override this by doing two things:
-    1) It needs to perform auth by find user in the db
-    2) Generate a jwt token when auth is successful
-    We will do that by creating a package config
-
- */
-
 @Configuration
 public class ApplicationConfiguration {
     private final UserRepository userRepository;

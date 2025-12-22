@@ -69,9 +69,4 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
     }
 
-    /*
-    Next up:
-    Define what criteria an incoming request must match before
-     */
-
 }
