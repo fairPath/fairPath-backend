@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.job_search.fair_path.dataTransferObject.JobResultDTO;
 import com.job_search.fair_path.entity.InclusiveCompanyEntity;
 import com.job_search.fair_path.repository.InclusiveCompanyRepository;
+import com.job_search.fair_path.services.JobService;
 
 @RestController
 @CrossOrigin
