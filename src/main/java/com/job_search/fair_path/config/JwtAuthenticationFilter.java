@@ -40,7 +40,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NotNull HttpServletResponse response,
             @NotNull FilterChain filterChain
             ) throws ServletException, IOException {
-        // This method will handle all core logic of jwt ath filter for each http request
+        // This method will handle all core logic of jwt auth filter for each http request
         final String authHeader = request.getHeader("Authorization");
         if(authHeader == null || !authHeader.startsWith("Beaer ")){
             filterChain.doFilter(request, response);
