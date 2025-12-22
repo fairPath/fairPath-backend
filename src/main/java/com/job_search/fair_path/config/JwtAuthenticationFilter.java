@@ -20,15 +20,6 @@ import java.io.IOException;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-    /*
-Next up: Filtering through JWT authentication, why? because for every single request
-we wanna retrieve this jwt token in the header and then validate it
-If token is invalid: reject the request
-else if token is is valid, 1)extract the user name
-    2) find the username in the db
-     3) set it in the auth context so we can access it in any application layer
-
- */
     private final HandlerExceptionResolver handlerExceptionResolver;
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
