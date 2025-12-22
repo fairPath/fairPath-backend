@@ -16,6 +16,7 @@ public class InclusiveCompaniesController {
     @GetMapping("/{companyName}")
     public InclusiveCompanyEntity getByCompanyName(@PathVariable String companyName) {
         return repo.findById(companyName).orElse(null);
+
     }
 
 }
