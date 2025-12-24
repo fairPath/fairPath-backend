@@ -1,4 +1,4 @@
-package com.job_search.fair_path.service;
+package com.job_search.fair_path.services;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

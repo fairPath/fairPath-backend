@@ -1,7 +1,7 @@
 package com.job_search.fair_path.controllers;
 
 import com.job_search.fair_path.entity.User;
-import com.job_search.fair_path.service.UserService;
+import com.job_search.fair_path.services.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;

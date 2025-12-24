@@ -1,6 +1,6 @@
 package com.job_search.fair_path.config;
 
-import com.job_search.fair_path.service.JwtService;
+import com.job_search.fair_path.services.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

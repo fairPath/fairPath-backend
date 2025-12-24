@@ -5,12 +5,10 @@ import com.job_search.fair_path.dataTransferObject.RegisterUserDTO;
 import com.job_search.fair_path.dataTransferObject.VerifyUserDTO;
 import com.job_search.fair_path.entity.User;
 import com.job_search.fair_path.responses.LoginResponse;
-import com.job_search.fair_path.service.AuthenticationService;
-import com.job_search.fair_path.service.JwtService;
-import com.job_search.fair_path.service.UserService;
+import com.job_search.fair_path.services.AuthenticationService;
+import com.job_search.fair_path.services.JwtService;
+import com.job_search.fair_path.services.UserService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 /*

@@ -1,4 +1,4 @@
-package com.job_search.fair_path.service;
+package com.job_search.fair_path.services;
 
 import com.job_search.fair_path.entity.User;
 import com.job_search.fair_path.repository.UserRepository;
