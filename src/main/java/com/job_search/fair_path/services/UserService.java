@@ -11,7 +11,7 @@ import java.util.List;
 public class UserService {
     // Class to allow users to access the endpoints and everything else
     private final UserRepository userRepository;
-    public UserService(UserRepository userRepository, EmailService emailService) {
+    public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
