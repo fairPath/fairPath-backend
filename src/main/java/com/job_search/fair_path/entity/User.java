@@ -15,32 +15,35 @@ import java.util.List;
 @Getter
 @Setter
 public class User implements UserDetails {
+
     /*
-    Blueprint for data model of user authentication, by connecting the db table users from entity folder
-    */
+     * Blueprint for data model of user authentication, by connecting the db table
+     * users from entity folder
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
-    @Column(unique = true, nullable = false)
+    @Column(name = "first_name", nullable = false)
     private String firstName;
-    @Column(unique = true, nullable = false)
+    @Column(name = "last_name", nullable = false)
     private String lastName;
-    @Column(unique = true, nullable = false)
+    @Column(name = "username", unique = true, nullable = false)
     private String username;
-    @Column(unique = true, nullable = false)
+    @Column(name = "email", unique = true, nullable = false)
     private String email;
-    @Column(nullable = false)
-    private String password_hash;
+    @Column(name = "password_hash", nullable = false)
+    private String password;
+    @Column(name = "enabled", nullable = false)
     private boolean enabled;
     @Column(name = "verification_code")
     private String verificationCode;
     @Column(name = "verification_expiration")
     private LocalDateTime verificationCodeExpiresAt;
 
-    public User(String firstName, String lastName, String username, String email, String password_hash) {
+    public User(String firstName, String lastName, String username, String email, String password) {
         this.username = username;
         this.email = email;
-        this.password_hash = password_hash;
+        this.password = password;
         this.firstName = firstName;
         this.lastName = lastName;
     }
@@ -49,38 +52,43 @@ public class User implements UserDetails {
     }
 
     @Override
-    public Collection<? extends GrantedAuthority> getAuthorities(){
+    public Collection<? extends GrantedAuthority> getAuthorities() {
         // used to return role based auth
         return List.of();
     }
 
     @Override
     public String getPassword() {
-        return password_hash;
+        return password;
     }
 
     @Override
     public String getUsername() {
+        return email;
+    }
+
+    public String getUsernameHandle() {
         return username;
     }
 
     @Override
-    public boolean isAccountNonExpired(){
+    public boolean isAccountNonExpired() {
         return true;
     }
 
     @Override
-    public boolean isAccountNonLocked(){
+    public boolean isAccountNonLocked() {
         return true;
     }
 
     @Override
-    public boolean isCredentialsNonExpired(){
+    public boolean isCredentialsNonExpired() {
         return true;
     }
 
     @Override
-    public boolean isEnabled(){
+    public boolean isEnabled() {
         return enabled;
     }
+
 }
