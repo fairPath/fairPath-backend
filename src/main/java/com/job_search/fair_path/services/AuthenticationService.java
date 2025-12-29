@@ -6,17 +6,22 @@ import com.job_search.fair_path.dataTransferObject.VerifyUserDTO;
 import com.job_search.fair_path.entity.User;
 import com.job_search.fair_path.repository.UserRepository;
 import jakarta.mail.MessagingException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Optional;
+import java.util.Random;
 
 @Service
 public class AuthenticationService {
 
+    @Value("${forgot.password.url}")
+    private String forgotPasswordUrl;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
@@ -86,9 +91,9 @@ public class AuthenticationService {
         }
     }
 
-    public void resendVerificationCode(String email) {
-        Optional<User> optionalUser = userRepository.findByEmail(email);
-        System.out.println("Resend verification code requested for email: " + email);
+    public void resendVerificationCode(LoginUserDTO input) {
+        Optional<User> optionalUser = userRepository.findByEmail(input.getEmail());
+        System.out.println("Resend verification code requested for email: " + input.getEmail());
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
             if (user.isEnabled()) {
@@ -130,6 +135,45 @@ public class AuthenticationService {
         Random random = new Random();
         int code = random.nextInt(900000) + 100000;
         return String.valueOf(code);
+    }
+
+    public void sendForgotPasswordEmail(LoginUserDTO input) {
+        Optional<User> optionalUser = userRepository.findByEmail(input.getEmail());
+        if (optionalUser.isPresent()) {
+            String subject = "Reset Password";
+            // Message itself will be in html format
+            String htmlMessage = "<html>"
+                    + "<body style=\"font-family: Arial, sans-serif;\">"
+                    + "<div style=\"background-color: #f5f5f5; padding: 20px;\">"
+                    + "<h2 style=\"color: #333;\">Welcome to our app!</h2>"
+                    + "<p style=\"font-size: 16px;\">Please click on the link below to update your password:</p>"
+                    + "<div style=\"background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);\">"
+                    + "<h3 style=\"color: #333;\">Forgot Password:</h3>"
+                    + "<p style=\"font-size: 18px; font-weight: bold; color: #007bff;\">" + forgotPasswordUrl + "</p>"
+                    + "</div>"
+                    + "</div>"
+                    + "</body>"
+                    + "</html>";
+            try {
+                emailService.sendVerificationEmail(input.getEmail(), subject, htmlMessage);
+            } catch (MessagingException e) {
+                e.printStackTrace();
+            }
+        } else {
+            throw new RuntimeException("User not found");
+        }
+
+    }
+
+    @Transactional
+    public void updatePassword(LoginUserDTO input) {
+        Optional<User> userOptional = userRepository.findByEmail(input.getEmail());
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            user.setPassword(passwordEncoder.encode(input.getPassword()));
+            userRepository.save(user);
+        }
+
     }
 
 }
