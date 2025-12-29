@@ -1,7 +1,7 @@
 package com.job_search.fair_path.controllers;
 
+import com.job_search.fair_path.dataTransferObject.AuthUserDTO;
 import com.job_search.fair_path.dataTransferObject.LoginResponseDTO;
-import com.job_search.fair_path.dataTransferObject.LoginUserDTO;
 import com.job_search.fair_path.dataTransferObject.RegisterUserDTO;
 import com.job_search.fair_path.dataTransferObject.VerifyUserDTO;
 import com.job_search.fair_path.entity.User;
@@ -41,8 +41,8 @@ public class AuthenticationController {
 
     // Post mapping for login
     @PostMapping("/login")
-    public ResponseEntity<LoginResponseDTO> authenticate(@RequestBody LoginUserDTO loginUserDTO) {
-        User authenticateUser = authenticationService.authenticate(loginUserDTO);
+    public ResponseEntity<LoginResponseDTO> authenticate(@RequestBody AuthUserDTO authUserDTO) {
+        User authenticateUser = authenticationService.authenticate(authUserDTO);
         String jwtToken = jwtService.generateToken(authenticateUser);
         LoginResponseDTO loginResponse = new LoginResponseDTO(jwtToken, jwtService.getExpirationTime());
 
@@ -63,13 +63,33 @@ public class AuthenticationController {
 
     // Resend email, resending verification code
     @PostMapping("/resend")
-    public ResponseEntity<?> resendVerificationCode(@RequestBody String email) {
+    public ResponseEntity<?> resendVerificationCode(@RequestBody AuthUserDTO input) {
         try {
-            authenticationService.resendVerificationCode(email);
+            authenticationService.resendVerificationCode(input);
             return ResponseEntity.ok("Verification code resent");
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
 
+        }
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> sendUpdatePasswordEmail(@RequestBody AuthUserDTO input) {
+        try {
+            authenticationService.sendForgotPasswordEmail(input);
+            return ResponseEntity.ok("Reset password email sent, please check your mailbox.");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PutMapping("/update-password")
+    public ResponseEntity<?> updatePassword(@RequestBody AuthUserDTO input) {
+        try {
+            authenticationService.updatePassword(input);
+            return ResponseEntity.ok("Successfully updated password");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
