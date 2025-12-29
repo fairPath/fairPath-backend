@@ -1,6 +1,6 @@
 package com.job_search.fair_path.services;
 
-import com.job_search.fair_path.dataTransferObject.LoginUserDTO;
+import com.job_search.fair_path.dataTransferObject.AuthUserDTO;
 import com.job_search.fair_path.dataTransferObject.RegisterUserDTO;
 import com.job_search.fair_path.dataTransferObject.VerifyUserDTO;
 import com.job_search.fair_path.entity.User;
@@ -49,7 +49,7 @@ public class AuthenticationService {
     }
 
     // Login Auth logic
-    public User authenticate(LoginUserDTO input) {
+    public User authenticate(AuthUserDTO input) {
 
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -91,7 +91,7 @@ public class AuthenticationService {
         }
     }
 
-    public void resendVerificationCode(LoginUserDTO input) {
+    public void resendVerificationCode(AuthUserDTO input) {
         Optional<User> optionalUser = userRepository.findByEmail(input.getEmail());
         System.out.println("Resend verification code requested for email: " + input.getEmail());
         if (optionalUser.isPresent()) {
@@ -137,7 +137,7 @@ public class AuthenticationService {
         return String.valueOf(code);
     }
 
-    public void sendForgotPasswordEmail(LoginUserDTO input) {
+    public void sendForgotPasswordEmail(AuthUserDTO input) {
         Optional<User> optionalUser = userRepository.findByEmail(input.getEmail());
         if (optionalUser.isPresent()) {
             String subject = "Reset Password";
@@ -149,7 +149,7 @@ public class AuthenticationService {
                     + "<p style=\"font-size: 16px;\">Please click on the link below to update your password:</p>"
                     + "<div style=\"background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);\">"
                     + "<h3 style=\"color: #333;\">Forgot Password:</h3>"
-                    + "<p style=\"font-size: 18px; font-weight: bold; color: #007bff;\">" + forgotPasswordUrl + "</p>"
+                    + "<a style=\"font-size: 18px; font-weight: bold; color: #007bff;\" href='" + forgotPasswordUrl + "'>Click here to reset Password" + "</a>"
                     + "</div>"
                     + "</div>"
                     + "</body>"
@@ -166,14 +166,13 @@ public class AuthenticationService {
     }
 
     @Transactional
-    public void updatePassword(LoginUserDTO input) {
+    public void updatePassword(AuthUserDTO input) {
         Optional<User> userOptional = userRepository.findByEmail(input.getEmail());
         if (userOptional.isPresent()) {
             User user = userOptional.get();
             user.setPassword(passwordEncoder.encode(input.getPassword()));
             userRepository.save(user);
         }
-
     }
 
 }
