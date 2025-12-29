@@ -149,7 +149,7 @@ public class AuthenticationService {
                     + "<p style=\"font-size: 16px;\">Please click on the link below to update your password:</p>"
                     + "<div style=\"background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);\">"
                     + "<h3 style=\"color: #333;\">Forgot Password:</h3>"
-                    + "<a style=\"font-size: 18px; font-weight: bold; color: #007bff;\" href='" + forgotPasswordUrl + "'>Click here to reset Password" + "</a>"
+                    + "<a style=\"font-size: 18px; font-weight: bold; color: #007bff;\" href='" + forgotPasswordUrl + "'>Click here to reset password" + "</a>"
                     + "</div>"
                     + "</div>"
                     + "</body>"
