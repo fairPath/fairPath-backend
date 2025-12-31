@@ -25,6 +25,8 @@ import java.util.Random;
 
 @Service
 public class AuthenticationService {
+    private static final int RESET_TOKEN_VALIDITY_MINUTES = 15;
+    private static final int VERIFY_CODE_VALIDITY_MINUTES = 15;
 
     @Value("${forgot.password.url}")
     private String forgotPasswordUrl;
@@ -48,7 +50,7 @@ public class AuthenticationService {
         User user = new User(input.getFirstName(), input.getLastName(), input.getUsername(), input.getEmail(),
                 passwordEncoder.encode(input.getPassword()));
         user.setVerificationCode(generateVerificationCode());
-        user.setVerificationCodeExpiresAt(LocalDateTime.now().plusMinutes(15));
+        user.setVerificationCodeExpiresAt(LocalDateTime.now().plusMinutes(VERIFY_CODE_VALIDITY_MINUTES));
         user.setEnabled(false);
         sendVerificationEmail(user);
         return userRepository.save(user);
@@ -105,7 +107,7 @@ public class AuthenticationService {
                 throw new RuntimeException("Account is already verified.");
             }
             user.setVerificationCode(generateVerificationCode());
-            user.setVerificationCodeExpiresAt(LocalDateTime.now().plusMinutes(15));
+            user.setVerificationCodeExpiresAt(LocalDateTime.now().plusMinutes(VERIFY_CODE_VALIDITY_MINUTES));
             sendVerificationEmail(user);
             userRepository.save(user);
         } else {
@@ -168,7 +170,7 @@ public class AuthenticationService {
 
                 String resetToken = generateResetToken();
                 user.setResetTokenHash(generateResetHash(resetToken));
-                user.setResetTokenExpiresAt(LocalDateTime.now().plusMinutes(15));
+                user.setResetTokenExpiresAt(LocalDateTime.now().plusMinutes(RESET_TOKEN_VALIDITY_MINUTES));
                 String newForgotPasswordUrl = forgotPasswordUrl + "?token=" + resetToken;
                 String subject = "Reset Password";
                 String htmlMessage = "<html>"
@@ -192,7 +194,7 @@ public class AuthenticationService {
                 user.setResetTokenHash(null);
                 user.setResetTokenExpiresAt(null);
                 userRepository.save(user);
-                e.printStackTrace();
+                throw new RuntimeException("Failed to send reset password email", e);
             }
         }
 
