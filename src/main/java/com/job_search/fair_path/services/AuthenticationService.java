@@ -3,6 +3,8 @@ package com.job_search.fair_path.services;
 import com.job_search.fair_path.dataTransferObject.AuthUserDTO;
 import com.job_search.fair_path.dataTransferObject.RegisterUserDTO;
 import com.job_search.fair_path.dataTransferObject.VerifyUserDTO;
+import com.job_search.fair_path.dataTransferObject.ForgotPasswordDTO;
+import com.job_search.fair_path.dataTransferObject.UpdatePasswordDTO;
 import com.job_search.fair_path.entity.User;
 import com.job_search.fair_path.repository.UserRepository;
 import jakarta.mail.MessagingException;
@@ -13,7 +15,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.Optional;
 import java.util.Random;
 
@@ -93,7 +99,6 @@ public class AuthenticationService {
 
     public void resendVerificationCode(AuthUserDTO input) {
         Optional<User> optionalUser = userRepository.findByEmail(input.getEmail());
-        System.out.println("Resend verification code requested for email: " + input.getEmail());
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
             if (user.isEnabled()) {
@@ -125,7 +130,7 @@ public class AuthenticationService {
                 + "</body>"
                 + "</html>";
         try {
-            emailService.sendVerificationEmail(user.getEmail(), subject, htmlMessage);
+            emailService.sendEmail(user.getEmail(), subject, htmlMessage);
         } catch (MessagingException e) {
             e.printStackTrace();
         }
@@ -137,40 +142,72 @@ public class AuthenticationService {
         return String.valueOf(code);
     }
 
-    public void sendForgotPasswordEmail(AuthUserDTO input) {
+    private String generateResetToken() {
+        byte[] bytes = new byte[32];
+        SecureRandom secureRandom = new SecureRandom();
+        secureRandom.nextBytes(bytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+    }
+
+    private String generateResetHash(String raw) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hashBytes = digest.digest(raw.getBytes(StandardCharsets.UTF_8));
+            return Base64.getUrlEncoder().withoutPadding().encodeToString(hashBytes);
+        } catch (Exception e) {
+            throw new RuntimeException("Error generating reset hash", e);
+        }
+    }
+
+    public void sendForgotPasswordEmail(ForgotPasswordDTO input) {
         Optional<User> optionalUser = userRepository.findByEmail(input.getEmail());
+        // need to generate token or unique code for resetting password
         if (optionalUser.isPresent()) {
-            String subject = "Reset Password";
-            // Message itself will be in html format
-            String htmlMessage = "<html>"
-                    + "<body style=\"font-family: Arial, sans-serif;\">"
-                    + "<div style=\"background-color: #f5f5f5; padding: 20px;\">"
-                    + "<h2 style=\"color: #333;\">Welcome to our app!</h2>"
-                    + "<p style=\"font-size: 16px;\">Please click on the link below to update your password:</p>"
-                    + "<div style=\"background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);\">"
-                    + "<h3 style=\"color: #333;\">Forgot Password:</h3>"
-                    + "<a style=\"font-size: 18px; font-weight: bold; color: #007bff;\" href='" + forgotPasswordUrl + "'>Click here to reset password" + "</a>"
-                    + "</div>"
-                    + "</div>"
-                    + "</body>"
-                    + "</html>";
+            User user = optionalUser.get();
             try {
-                emailService.sendVerificationEmail(input.getEmail(), subject, htmlMessage);
+
+                String resetToken = generateResetToken();
+                user.setResetTokenHash(generateResetHash(resetToken));
+                user.setResetTokenExpiresAt(LocalDateTime.now().plusMinutes(15));
+                String newForgotPasswordUrl = forgotPasswordUrl + "?token=" + resetToken;
+                String subject = "Reset Password";
+                String htmlMessage = "<html>"
+                        + "<body style=\"font-family: Arial, sans-serif;\">"
+                        + "<div style=\"background-color: #f5f5f5; padding: 20px;\">"
+                        + "<h2 style=\"color: #333;\">Welcome to our app!</h2>"
+                        + "<p style=\"font-size: 16px;\">Please click on the link below to update your password:</p>"
+                        + "<div style=\"background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);\">"
+                        + "<h3 style=\"color: #333;\">Forgot Password:</h3>"
+                        + "<a style=\"font-size: 18px; font-weight: bold; color: #007bff;\" href='"
+                        + newForgotPasswordUrl
+                        + "'>Click here to reset password" + "</a>"
+                        + "</div>"
+                        + "</div>"
+                        + "</body>"
+                        + "</html>";
+
+                userRepository.save(user);
+                emailService.sendEmail(input.getEmail(), subject, htmlMessage);
             } catch (MessagingException e) {
+                user.setResetTokenHash(null);
+                user.setResetTokenExpiresAt(null);
+                userRepository.save(user);
                 e.printStackTrace();
             }
-        } else {
-            throw new RuntimeException("User not found");
         }
 
     }
 
     @Transactional
-    public void updatePassword(AuthUserDTO input) {
-        Optional<User> userOptional = userRepository.findByEmail(input.getEmail());
+    public void updatePassword(UpdatePasswordDTO input) {
+        String resetHash = generateResetHash(input.getResetToken());
+        Optional<User> userOptional = userRepository.findByResetTokenHash(resetHash);
         if (userOptional.isPresent()) {
+
             User user = userOptional.get();
             user.setPassword(passwordEncoder.encode(input.getPassword()));
+            user.setResetTokenHash(null);
+            user.setResetTokenExpiresAt(null);
             userRepository.save(user);
         }
     }

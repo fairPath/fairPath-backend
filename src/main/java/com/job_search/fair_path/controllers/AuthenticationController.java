@@ -4,6 +4,8 @@ import com.job_search.fair_path.dataTransferObject.AuthUserDTO;
 import com.job_search.fair_path.dataTransferObject.LoginResponseDTO;
 import com.job_search.fair_path.dataTransferObject.RegisterUserDTO;
 import com.job_search.fair_path.dataTransferObject.VerifyUserDTO;
+import com.job_search.fair_path.dataTransferObject.ForgotPasswordDTO;
+import com.job_search.fair_path.dataTransferObject.UpdatePasswordDTO;
 import com.job_search.fair_path.entity.User;
 import com.job_search.fair_path.services.AuthenticationService;
 import com.job_search.fair_path.services.JwtService;
@@ -74,7 +76,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<?> sendUpdatePasswordEmail(@RequestBody AuthUserDTO input) {
+    public ResponseEntity<?> sendUpdatePasswordEmail(@RequestBody ForgotPasswordDTO input) {
         try {
             authenticationService.sendForgotPasswordEmail(input);
             return ResponseEntity.ok("Reset password email sent, please check your mailbox.");
@@ -84,7 +86,7 @@ public class AuthenticationController {
     }
 
     @PutMapping("/update-password")
-    public ResponseEntity<?> updatePassword(@RequestBody AuthUserDTO input) {
+    public ResponseEntity<?> updatePassword(@RequestBody UpdatePasswordDTO input) {
         try {
             authenticationService.updatePassword(input);
             return ResponseEntity.ok("Successfully updated password");
