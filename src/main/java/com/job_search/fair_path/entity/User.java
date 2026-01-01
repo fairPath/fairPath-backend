@@ -39,7 +39,11 @@ public class User implements UserDetails {
     private String verificationCode;
     @Column(name = "verification_expiration")
     private LocalDateTime verificationCodeExpiresAt;
-
+    @Column(name = "reset_token_hash")
+    private String resetTokenHash;
+    @Column(name = "reset_expiration")
+    private LocalDateTime resetTokenExpiresAt;
+    
     public User(String firstName, String lastName, String username, String email, String password) {
         this.username = username;
         this.email = email;

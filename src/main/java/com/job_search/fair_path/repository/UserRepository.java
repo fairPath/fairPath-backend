@@ -10,5 +10,8 @@ import java.util.Optional;
 public interface UserRepository extends CrudRepository<User, Integer> {
     // Optional is used a not guaranteed return of a user
     Optional<User> findByEmail(String email);
+
     Optional<User> findByVerificationCode(String verificationCode);
+
+    Optional<User> findByResetTokenHash(String resetTokenHash);
 }
