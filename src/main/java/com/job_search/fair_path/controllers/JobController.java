@@ -35,13 +35,10 @@ public class JobController {
             @RequestParam(required = false) String contract) {
         List<JobResultDTO> jobs = new ArrayList<>();
         List<String> ratingList = new ArrayList<>();
-        Integer totalCountOfJobs = 0;
         String apiResponse = jobService.getJobs(where, titleOnly, salaryMin, company, fullTime, partTime, contract);
         ObjectMapper mapper = new ObjectMapper();
         try {
             JsonNode rootNode = mapper.readTree(apiResponse);
-            totalCountOfJobs = rootNode.get("count").asInt();
-            System.out.println("********************" + totalCountOfJobs);
             ArrayNode arrayNode = (ArrayNode) rootNode.get("results");
 
             if (arrayNode != null) {
