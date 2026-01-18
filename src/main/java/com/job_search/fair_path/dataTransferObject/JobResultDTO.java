@@ -12,7 +12,7 @@ public class JobResultDTO implements Comparable<JobResultDTO> {
     private Integer rating;
 
     public JobResultDTO(String title, String companyName, String dateCreated, String location, String redirectUrl,
-            String jobDescription, Double salaryMin, Double salaryMax, Integer rating) {
+            String jobDescription, Double salaryMin, Double salaryMax) {
         this.title = title;
         this.companyName = companyName;
         this.dateCreated = dateCreated;
@@ -21,7 +21,6 @@ public class JobResultDTO implements Comparable<JobResultDTO> {
         this.jobDescription = jobDescription;
         this.salaryMin = salaryMin;
         this.salaryMax = salaryMax;
-        this.rating = rating;
     }
 
     @Override
@@ -75,10 +74,6 @@ public class JobResultDTO implements Comparable<JobResultDTO> {
 
     public Double getSalaryMax() {
         return salaryMax;
-    }
-
-    public Integer getRating() {
-        return rating;
     }
 
 }
