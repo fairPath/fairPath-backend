@@ -34,7 +34,6 @@ public class JobController {
             @RequestParam(required = false) String fullTime, @RequestParam(required = false) String partTime,
             @RequestParam(required = false) String contract) {
         List<JobResultDTO> jobs = new ArrayList<>();
-        List<String> ratingList = new ArrayList<>();
         String apiResponse = jobService.getJobs(where, titleOnly, salaryMin, company, fullTime, partTime, contract);
         ObjectMapper mapper = new ObjectMapper();
         try {
@@ -57,12 +56,10 @@ public class JobController {
 
                     JobResultDTO job = new JobResultDTO(title, companyName, dateCreated, location, redirectUrl,
                             jobDescription, salary_min, salary_max);
-                    System.out.println(job);
 
                     jobs.add(job);
                 }
             }
-            System.out.println("rating list==========================" + ratingList.toString());
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -16,7 +16,7 @@ public class JobService {
     @Value("${APP_KEY}")
     private String appKey;
 
-    private final String adzunaApiUrl = "https://api.adzuna.com/v1/api/jobs/us/search/1";
+    private final String adzunaApiUrl = "https://api.adzuna.com/v1/api/jobs/us/search/0";
 
     public JobService(RestTemplateBuilder builder) {
         this.restTemplate = builder.build();
@@ -40,8 +40,7 @@ public class JobService {
             url += "&part_time=" + partTime;
         if (contract != null && !contract.isEmpty())
             url += "&contract=" + contract;
-        url += "&results_per_page=120";
-        System.out.println("titleOnly" + titleOnly);
+        url += "&results_per_page=50";
         return restTemplate.getForObject(url, String.class);
     }
 }
