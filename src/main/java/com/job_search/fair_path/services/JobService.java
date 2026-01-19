@@ -40,7 +40,7 @@ public class JobService {
             url += "&part_time=" + partTime;
         if (contract != null && !contract.isEmpty())
             url += "&contract=" + contract;
-        url += "&results_per_page=50";
+        url += "&results_per_page=120";
         return restTemplate.getForObject(url, String.class);
     }
 }
