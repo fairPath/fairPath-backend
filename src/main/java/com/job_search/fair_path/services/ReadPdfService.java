@@ -15,26 +15,29 @@ import org.springframework.stereotype.Service;
 
 import jakarta.annotation.PostConstruct;
 
-
 @Service
 public class ReadPdfService {
     private static final Logger log = LoggerFactory.getLogger(ReadPdfService.class);
     private final VectorStore vectorStore;
-    // @Value("docs/Resume.pdf")
-    // private Resource resource;
+    @Value("${fairpath.ingest-on-startup:false}")
+    private boolean ingestOnStartup;
     @Value("/tmp/rag-vectorstore.json")
     private String vectorStorePath;
+
     public ReadPdfService(VectorStore vectorStore) {
         this.vectorStore = vectorStore;
     }
+
     @PostConstruct
     public void init() {
         try {
             // If a persisted store exists, load it and skip re-embedding
             File cache = new File(vectorStorePath);
+            if (!ingestOnStartup) {
+                return;
+            }
             if (cache.exists() && cache.length() > 0) {
                 log.info("Loading existing vector store from {}", vectorStorePath);
-                // SimpleVectorStore.load(cache)  // supported in your build
                 return;
             }
             var resource = new ClassPathResource("docs/Resume.pdf");
@@ -54,4 +57,3 @@ public class ReadPdfService {
         }
     }
 }
-
