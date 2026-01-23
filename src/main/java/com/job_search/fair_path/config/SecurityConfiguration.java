@@ -37,7 +37,7 @@ public class SecurityConfiguration {
                                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                                 .authorizeHttpRequests(authorize -> authorize
                                                 .requestMatchers("/auth/**").permitAll()
-                                                .requestMatchers("/api/aws/**").permitAll() // remove
+                                                .requestMatchers("/api/aws/s3-test").permitAll() // remove
                                                 .anyRequest().authenticated())
                                 .formLogin((form) -> form
                                                 .loginPage("/login")
