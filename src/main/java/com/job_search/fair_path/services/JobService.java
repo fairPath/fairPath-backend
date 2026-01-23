@@ -16,7 +16,7 @@ public class JobService {
     @Value("${APP_KEY}")
     private String appKey;
 
-    private final String adzunaApiUrl = "https://api.adzuna.com/v1/api/jobs/us/search/0";
+    private final String adzunaApiUrl = "https://api.adzuna.com/v1/api/jobs/us/search/1";
 
     public JobService(RestTemplateBuilder builder) {
         this.restTemplate = builder.build();

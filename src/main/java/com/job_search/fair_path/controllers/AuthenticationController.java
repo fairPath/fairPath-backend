@@ -43,7 +43,6 @@ public class AuthenticationController {
     public ResponseEntity<?> register(@RequestBody RegisterUserDTO registerUserDTO) {
         try {
             authenticationService.signUp(registerUserDTO);
-            System.out.println("Generated JWT Token");
             return ResponseEntity.ok("Success");
         } catch (DuplicateKeyException ex) {
             return ResponseEntity
