@@ -17,10 +17,10 @@ import jakarta.annotation.PostConstruct;
 
 @Service
 public class ReadPdfService {
-    private static final Logger log = LoggerFactory.getLogger(ReadPdfService.class);
-    private final VectorStore vectorStore;
     @Value("${fairpath.ingest-on-startup:false}")
     private boolean ingestOnStartup;
+    private static final Logger log = LoggerFactory.getLogger(ReadPdfService.class);
+    private final VectorStore vectorStore;
     @Value("/tmp/rag-vectorstore.json")
     private String vectorStorePath;
 
@@ -30,6 +30,9 @@ public class ReadPdfService {
 
     @PostConstruct
     public void init() {
+        if (!ingestOnStartup) {
+            return;
+        }
         try {
             // If a persisted store exists, load it and skip re-embedding
             File cache = new File(vectorStorePath);
@@ -38,6 +41,7 @@ public class ReadPdfService {
             }
             if (cache.exists() && cache.length() > 0) {
                 log.info("Loading existing vector store from {}", vectorStorePath);
+                // SimpleVectorStore.load(cache) // supported in your build
                 return;
             }
             var resource = new ClassPathResource("docs/Resume.pdf");
