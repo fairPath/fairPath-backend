@@ -10,6 +10,11 @@ import com.job_search.fair_path.entity.User;
 import com.job_search.fair_path.services.AuthenticationService;
 import com.job_search.fair_path.services.JwtService;
 import com.job_search.fair_path.services.UserService;
+
+import java.util.Map;
+
+import org.springframework.dao.DuplicateKeyException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,10 +40,18 @@ public class AuthenticationController {
     // Expose mapping for signing up to create accounts
 
     @PostMapping("/signup")
-    public ResponseEntity<String> register(@RequestBody RegisterUserDTO registerUserDTO) {
-        User registeredUser = authenticationService.signUp(registerUserDTO);
-        System.out.println("Generated JWT Token: " + "Hello");
-        return ResponseEntity.ok("Hello");
+    public ResponseEntity<?> register(@RequestBody RegisterUserDTO registerUserDTO) {
+        try {
+            authenticationService.signUp(registerUserDTO);
+            System.out.println("Generated JWT Token");
+            return ResponseEntity.ok("Success");
+        } catch (DuplicateKeyException ex) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST) // or HttpStatus.CONFLICT
+                    .body(Map.of(
+                            "code", "DUPLICATE_USER",
+                            "message", ex.getMessage()));
+        }
     }
 
     // Post mapping for login
@@ -47,7 +60,6 @@ public class AuthenticationController {
         User authenticateUser = authenticationService.authenticate(authUserDTO);
         String jwtToken = jwtService.generateToken(authenticateUser);
         LoginResponseDTO loginResponse = new LoginResponseDTO(jwtToken, jwtService.getExpirationTime());
-
         return ResponseEntity.ok(loginResponse);
     }
 

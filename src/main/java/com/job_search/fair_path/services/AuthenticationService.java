@@ -9,6 +9,8 @@ import com.job_search.fair_path.entity.User;
 import com.job_search.fair_path.repository.UserRepository;
 import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,6 +24,8 @@ import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.Optional;
 import java.util.Random;
+
+import javax.management.RuntimeErrorException;
 
 @Service
 public class AuthenticationService {
@@ -46,14 +50,21 @@ public class AuthenticationService {
         this.emailService = emailService;
     }
 
-    public User signUp(RegisterUserDTO input) {
+    public void signUp(RegisterUserDTO input) {
+
         User user = new User(input.getFirstName(), input.getLastName(), input.getUsername(), input.getEmail(),
                 passwordEncoder.encode(input.getPassword()));
         user.setVerificationCode(generateVerificationCode());
         user.setVerificationCodeExpiresAt(LocalDateTime.now().plusMinutes(VERIFY_CODE_VALIDITY_MINUTES));
         user.setEnabled(false);
+
+        try {
+            userRepository.save(user);
+        } catch (DataIntegrityViolationException ex) {
+            throw new DuplicateKeyException("Email already exists");
+        }
         sendVerificationEmail(user);
-        return userRepository.save(user);
+
     }
 
     // Login Auth logic

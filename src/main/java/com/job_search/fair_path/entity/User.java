@@ -3,12 +3,15 @@ package com.job_search.fair_path.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+
+import org.hibernate.annotations.UuidGenerator;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "users")
@@ -21,8 +24,8 @@ public class User implements UserDetails {
      * users from entity folder
      */
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Integer id;
+    @UuidGenerator
+    private UUID id;
     @Column(name = "first_name", nullable = false)
     private String firstName;
     @Column(name = "last_name", nullable = false)
@@ -43,7 +46,7 @@ public class User implements UserDetails {
     private String resetTokenHash;
     @Column(name = "reset_expiration")
     private LocalDateTime resetTokenExpiresAt;
-    
+
     public User(String firstName, String lastName, String username, String email, String password) {
         this.username = username;
         this.email = email;
