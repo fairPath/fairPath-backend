@@ -38,9 +38,6 @@ public class SecurityConfiguration {
                                 .authorizeHttpRequests(authorize -> authorize
                                                 .requestMatchers("/auth/**").permitAll()
                                                 .anyRequest().authenticated())
-                                .formLogin((form) -> form
-                                                .loginPage("/login")
-                                                .permitAll())
                                 .sessionManagement(session -> session
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                                 .authenticationProvider(authenticationProvider)
