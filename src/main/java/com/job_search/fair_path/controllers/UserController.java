@@ -4,13 +4,13 @@ import com.job_search.fair_path.dataTransferObject.UserProfileDTO;
 import com.job_search.fair_path.entity.User;
 import com.job_search.fair_path.services.UserService;
 
+import java.util.UUID;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.util.List;
 
 @RequestMapping("/users")
 @RestController
@@ -35,9 +35,4 @@ public class UserController {
         return ResponseEntity.ok(UserProfileDTO.from(user));
     }
 
-    @GetMapping("/")
-    public ResponseEntity<List<User>> allUsers() {
-        List<User> users = userService.allUsers();
-        return ResponseEntity.ok(users);
-    }
 }

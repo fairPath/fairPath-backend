@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import com.job_search.fair_path.entity.User;
+
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,8 +26,8 @@ public class JwtService {
     @Value("${security.jwt.expiration-time}")
     private long jwtExpiration;
 
-    // extra user name using token
-    public String extractUsername(String token) {
+    // extract user id (subject) from token
+    public String extractUserId(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
@@ -50,12 +52,11 @@ public class JwtService {
     private String buildToken(
             Map<String, Object> extraClaims,
             UserDetails userDetails,
-            long expiration
-    ) {
+            long expiration) {
         return Jwts
                 .builder()
                 .setClaims(extraClaims)
-                .setSubject(userDetails.getUsername())
+                .setSubject(resolveSubject(userDetails))
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
@@ -63,8 +64,8 @@ public class JwtService {
     }
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
-        final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
+        final String userId = extractUserId(token);
+        return (userId.equals(resolveSubject(userDetails))) && !isTokenExpired(token);
     }
 
     private boolean isTokenExpired(String token) {
@@ -82,6 +83,13 @@ public class JwtService {
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
+    }
+
+    private String resolveSubject(UserDetails userDetails) {
+        if (userDetails instanceof User user) {
+            return user.getId().toString();
+        }
+        throw new IllegalArgumentException("JWT subject must be user id");
     }
 
     private Key getSignInKey() {
