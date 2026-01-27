@@ -15,10 +15,6 @@ import com.job_search.fair_path.services.SavedJobService;
 import com.job_search.fair_path.dataTransferObject.JobResultDTO;
 import com.job_search.fair_path.dataTransferObject.SaveJobRequestDTO;
 import com.job_search.fair_path.entity.SavedJobsEntity;
-import com.job_search.fair_path.entity.User;
-import com.job_search.fair_path.repository.SavedJobsRepository;
-
-import java.util.UUID;
 
 @RestController
 @CrossOrigin
@@ -27,7 +23,7 @@ public class SaveJobController {
 
     private final SavedJobService savedJobService;
 
-    public SaveJobController(SavedJobService savedJobService, SavedJobsRepository savedJobsRepository) {
+    public SaveJobController(SavedJobService savedJobService) {
         this.savedJobService = savedJobService;
     }
 
