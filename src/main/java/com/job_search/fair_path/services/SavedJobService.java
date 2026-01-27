@@ -31,14 +31,6 @@ public class SavedJobService {
         return savedJobs;
     }
 
-    public List<SavedJobsEntity> saveJobForUser(UUID userId, String jobTitle,
-            String redirectUrl, String dateCreated, String location,
-            String jobDescription, Integer salaryMin, Integer salaryMax) {
-        List<SavedJobsEntity> savedJobs = new ArrayList<>();
-        savedJobs = savedJobsRepository.findByUserId(userId);
-        return savedJobs;
-    }
-
     public void saveJob(SaveJobRequestDTO saveJobRequestDTO, Authentication authentication) {
         User user = (User) authentication.getPrincipal();
         UUID userId = user.getId();
