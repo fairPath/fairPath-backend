@@ -49,11 +49,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             // Authenticating request and need to be stateless meaning each request must be treated as new one
             final String jwt = authHeader.substring(7);
-            final String userEmail = jwtService.extractUsername(jwt);
+            final String userId = jwtService.extractUserId(jwt);
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-            if (userEmail != null && authentication == null) {
-                UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
+            if (userId != null && authentication == null) {
+                UserDetails userDetails = this.userDetailsService.loadUserByUsername(userId);
                 if (jwtService.isTokenValid(jwt, userDetails)) {
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                             userDetails,

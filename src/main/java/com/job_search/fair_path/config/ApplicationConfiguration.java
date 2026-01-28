@@ -11,6 +11,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import java.util.UUID;
+import java.util.Objects;
+
 @Configuration
 public class ApplicationConfiguration {
 
@@ -22,8 +25,17 @@ public class ApplicationConfiguration {
 
     @Bean
     UserDetailsService userDetailsService() {
-        return username -> userRepository.findByEmail(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        return username -> {
+            UserDetailsService byEmail = email -> userRepository.findByEmail(email)
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+            try {
+                UUID userId = Objects.requireNonNull(UUID.fromString(username));
+                return userRepository.findById(userId)
+                        .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+            } catch (IllegalArgumentException ex) {
+                return byEmail.loadUserByUsername(username);
+            }
+        };
     }
 
     @Bean
