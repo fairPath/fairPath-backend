@@ -1,15 +1,16 @@
 package com.job_search.fair_path.dataTransferObject;
 
+import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class JobResultDTO implements Comparable<JobResultDTO> {
+public class JobResultDTO {
     private String jobId;
     private String title;
     private String companyName;
-    private String dateCreated;
+    private LocalDateTime dateCreated;
     private String location;
     private String redirectUrl;
     private String jobDescription;
@@ -17,7 +18,7 @@ public class JobResultDTO implements Comparable<JobResultDTO> {
     private Double salaryMax;
     private Boolean saved;
 
-    public JobResultDTO(String jobId, String title, String companyName, String dateCreated, String location,
+    public JobResultDTO(String jobId, String title, String companyName, LocalDateTime dateCreated, String location,
             String redirectUrl,
             String jobDescription, Double salaryMin, Double salaryMax, Boolean saved) {
         this.jobId = jobId;
@@ -40,11 +41,6 @@ public class JobResultDTO implements Comparable<JobResultDTO> {
                 + ", redirectUrl=" + redirectUrl + ", salaryMin="
                 + salaryMin + ", salaryMax=" + salaryMax +
                 '}';
-    }
-
-    @Override
-    public int compareTo(JobResultDTO other) {
-        return this.dateCreated.compareTo(other.dateCreated); // Sort by dateCreated
     }
 
 }

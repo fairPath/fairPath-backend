@@ -1,6 +1,6 @@
 package com.job_search.fair_path.services;
 
-import com.job_search.fair_path.dataTransferObject.SaveJobRequestDTO;
+import com.job_search.fair_path.dataTransferObject.JobResultDTO;
 import com.job_search.fair_path.entity.SavedJobsEntity;
 import com.job_search.fair_path.entity.User;
 import com.job_search.fair_path.repository.SavedJobsRepository;
@@ -22,23 +22,30 @@ public class SavedJobService {
         this.savedJobsRepository = savedJobsRepository;
     }
 
-    public List<SavedJobsEntity> getSavedJobsForUser(Authentication authentication) {
+    public List<JobResultDTO> getSavedJobsForUser(Authentication authentication) {
         User user = (User) authentication.getPrincipal();
         UUID userId = user.getId();
         List<SavedJobsEntity> savedJobs = new ArrayList<>();
         savedJobs = savedJobsRepository.findByUserId(userId);
-        return savedJobs;
+        List<JobResultDTO> jobResults = new ArrayList<>();
+        savedJobs.forEach(job -> {
+            JobResultDTO jobResult = new JobResultDTO(job.getJobId(), job.getJobTitle(), job.getCompanyName(),
+                    job.getDateCreated(), job.getLocation(), job.getRedirectUrl(), job.getJobDescription(),
+                    job.getSalaryMin(), job.getSalaryMax(), true);
+            jobResults.add(jobResult);
+        });
+        return jobResults;
     }
 
-    public void saveJob(SaveJobRequestDTO saveJobRequestDTO, Authentication authentication) {
+    public void saveJob(JobResultDTO jobResultDTO, Authentication authentication) {
         User user = (User) authentication.getPrincipal();
         UUID userId = user.getId();
-        String jobDesSnippet = saveJobRequestDTO.getJobDescription().substring(0, 252) + "...";
-        SavedJobsEntity jobToSave = new SavedJobsEntity(saveJobRequestDTO.getJobId(), userId,
-                saveJobRequestDTO.getCompanyName(), saveJobRequestDTO.getTitle(), saveJobRequestDTO.getRedirectUrl(),
-                saveJobRequestDTO.getDateCreated(),
-                saveJobRequestDTO.getLocation(), jobDesSnippet, saveJobRequestDTO.getSalaryMin(),
-                saveJobRequestDTO.getSalaryMax());
+        String jobDesSnippet = jobResultDTO.getJobDescription().substring(0, 252) + "...";
+        SavedJobsEntity jobToSave = new SavedJobsEntity(jobResultDTO.getJobId(), userId,
+                jobResultDTO.getCompanyName(), jobResultDTO.getTitle(), jobResultDTO.getRedirectUrl(),
+                jobResultDTO.getDateCreated(),
+                jobResultDTO.getLocation(), jobDesSnippet, jobResultDTO.getSalaryMin(),
+                jobResultDTO.getSalaryMax());
         savedJobsRepository.save(jobToSave);
     }
 

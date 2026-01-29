@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -25,7 +26,7 @@ public class SavedJobsEntity {
     @Column(name = "redirect_url")
     private String redirectUrl;
     @Column(name = "date_created")
-    private String dateCreated;
+    private LocalDateTime dateCreated;
     @Column(name = "location")
     private String location;
     @Column(name = "job_description")
@@ -36,7 +37,7 @@ public class SavedJobsEntity {
     private Double salaryMax;
 
     public SavedJobsEntity(String jobId, UUID userId, String companyName, String jobTitle, String redirectUrl,
-            String dateCreated, String location,
+            LocalDateTime dateCreated, String location,
             String jobDescription, Double salaryMin, Double salaryMax) {
         this.companyName = companyName;
         this.userId = userId;
