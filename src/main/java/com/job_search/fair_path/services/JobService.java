@@ -1,14 +1,30 @@
 package com.job_search.fair_path.services;
 
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.job_search.fair_path.dataTransferObject.JobResultDTO;
 
 @Service
 public class JobService {
 
     private final RestTemplate restTemplate;
+    private final SavedJobService savedJobService;
 
     @Value("${APP_ID}")
     private String appId;
@@ -18,13 +34,15 @@ public class JobService {
 
     private final String adzunaApiUrl = "https://api.adzuna.com/v1/api/jobs/us/search/1";
 
-    public JobService(RestTemplateBuilder builder) {
+    public JobService(RestTemplateBuilder builder, SavedJobService savedJobService) {
         this.restTemplate = builder.build();
+        this.savedJobService = savedJobService;
     }
 
-    public String getJobs(String where, String titleOnly, Integer salaryMin, String company, String fullTime,
+    public List<JobResultDTO> getJobs(String where, String titleOnly, Integer salaryMin, String company,
+            String fullTime,
             String partTime,
-            String contract) {
+            String contract, Authentication authentication) {
         String url = adzunaApiUrl + "?app_id=" + appId + "&app_key=" + appKey;
         if (where != null && !where.isEmpty())
             url += "&where=" + where;
@@ -41,6 +59,47 @@ public class JobService {
         if (contract != null && !contract.isEmpty())
             url += "&contract=" + contract;
         url += "&results_per_page=120";
-        return restTemplate.getForObject(url, String.class);
+        String apiResponse = restTemplate.getForObject(url, String.class);
+        List<JobResultDTO> savedJobs = savedJobService.getSavedJobsForUser(authentication);
+        List<JobResultDTO> jobs = new ArrayList<>();
+        ObjectMapper mapper = new ObjectMapper();
+        Set<String> savedJobIdsSet = new HashSet<>();
+        for (JobResultDTO job : savedJobs) {
+            savedJobIdsSet.add(job.getJobId());
+        }
+        try {
+            JsonNode rootNode = mapper.readTree(apiResponse);
+            ArrayNode arrayNode = (ArrayNode) rootNode.get("results");
+
+            if (arrayNode != null) {
+                for (JsonNode node : arrayNode) {
+                    String title = node.get("title").asText();
+                    String companyName = node.path("company").path("display_name").asText();
+                    String dateStr = node.get("created").asText();
+                    LocalDateTime dateCreated = ZonedDateTime.parse(dateStr).toLocalDateTime();
+                    String locationDisplayName = node.path("location").path("display_name").asText();
+                    String locationCountry = node.get("location").get("area").get(0).asText();
+                    String location = new StringBuilder(
+                            locationDisplayName + ", " + locationCountry).toString();
+                    String redirectUrl = node.get("redirect_url").asText();
+                    String jobId = node.get("id").asText();
+                    String jobDescription = node.get("description").asText();
+                    Double jobSalaryMin = node.get("salary_min").asDouble();
+                    Double jobSalaryMax = node.get("salary_max").asDouble();
+                    Boolean saved = false;
+
+                    if (savedJobIdsSet.contains(jobId)) {
+                        saved = true;
+                    }
+
+                    JobResultDTO job = new JobResultDTO(jobId, title, companyName, dateCreated, location, redirectUrl,
+                            jobDescription, jobSalaryMin, jobSalaryMax, saved);
+                    jobs.add(job);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return jobs;
     }
 }
