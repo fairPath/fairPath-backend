@@ -27,7 +27,6 @@ public class UserController {
         try {
             User user = ((User) authentication.getPrincipal());
             UserProfileDTO userProfile = userService.getUserProfile(user.getId());
-            System.out.println("User Profile: " + userProfile);
             return ResponseEntity.ok(userProfile);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
