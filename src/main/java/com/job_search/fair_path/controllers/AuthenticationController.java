@@ -9,7 +9,6 @@ import com.job_search.fair_path.dataTransferObject.UpdatePasswordDTO;
 import com.job_search.fair_path.entity.User;
 import com.job_search.fair_path.services.AuthenticationService;
 import com.job_search.fair_path.services.JwtService;
-import com.job_search.fair_path.services.UserService;
 
 import java.util.Map;
 
@@ -28,13 +27,10 @@ import org.springframework.web.bind.annotation.*;
 public class AuthenticationController {
     private final JwtService jwtService;
     private final AuthenticationService authenticationService;
-    private final UserService userService;
 
-    public AuthenticationController(JwtService jwtService, AuthenticationService authenticationService,
-            UserService userService) {
+    public AuthenticationController(JwtService jwtService, AuthenticationService authenticationService) {
         this.jwtService = jwtService;
         this.authenticationService = authenticationService;
-        this.userService = userService;
     }
 
     // Expose mapping for signing up to create accounts

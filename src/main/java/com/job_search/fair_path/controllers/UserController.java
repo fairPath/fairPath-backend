@@ -4,13 +4,10 @@ import com.job_search.fair_path.dataTransferObject.UserProfileDTO;
 import com.job_search.fair_path.entity.User;
 import com.job_search.fair_path.services.UserService;
 
-import java.util.UUID;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 @RequestMapping("/users")
 @RestController
@@ -27,12 +24,15 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 
         }
+        try {
+            User user = ((User) authentication.getPrincipal());
+            UserProfileDTO userProfile = userService.getUserProfile(user.getId());
+            return ResponseEntity.ok(userProfile);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 
-        String email = authentication.getName(); // usually email/username
-        User user = userService.findByEmail(email)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        }
 
-        return ResponseEntity.ok(UserProfileDTO.from(user));
     }
 
 }
