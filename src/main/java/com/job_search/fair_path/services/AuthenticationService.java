@@ -25,8 +25,6 @@ import java.util.Base64;
 import java.util.Optional;
 import java.util.Random;
 
-import javax.management.RuntimeErrorException;
-
 @Service
 public class AuthenticationService {
     private static final int RESET_TOKEN_VALIDITY_MINUTES = 15;

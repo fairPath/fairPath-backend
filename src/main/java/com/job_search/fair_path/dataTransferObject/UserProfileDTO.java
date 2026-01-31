@@ -3,8 +3,6 @@ package com.job_search.fair_path.dataTransferObject;
 import java.time.Instant;
 import java.util.UUID;
 
-import com.job_search.fair_path.entity.User;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;

@@ -30,12 +30,10 @@ public class ResumeController {
             Authentication authentication) {
         {
             try {
-                System.out.println("request" + request);
                 String filename = request.getFilename();
                 User user = (User) authentication.getPrincipal();
                 UUID userId = user.getId();
                 ResumePresignUrlResponseDTO presignedUploadDTO = resumeService.createPresignUploadUrl(userId, filename);
-                System.out.println("Presigned URL created: " + presignedUploadDTO);
                 return ResponseEntity.ok(presignedUploadDTO);
             } catch (Error e) {
                 return ResponseEntity.badRequest().build();
