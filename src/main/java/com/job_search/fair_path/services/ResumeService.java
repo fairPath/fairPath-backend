@@ -1,19 +1,22 @@
 package com.job_search.fair_path.services;
 
+import java.time.Duration;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.job_search.fair_path.dataTransferObject.ResumePresignUrlResponseDTO;
 import com.job_search.fair_path.entity.Resume;
 import com.job_search.fair_path.repository.ResumeRepository;
 
-import software.amazon.awssdk.core.sync.RequestBody;
+import jakarta.transaction.Transactional;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 
 @Service
@@ -73,20 +76,34 @@ public class ResumeService {
 
     }
 
-    public void upload(MultipartFile file, UUID userId) {
-        try {
-
-            String key = "resumes/" + userId + "/" + file.getOriginalFilename();
-            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-                    .bucket(bucketName)
-                    .key(key)
-                    .contentType(file.getContentType())
-                    .build();
-
-            s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to upload file", e);
+    @Transactional
+    public void deleteResume(UUID userId) {
+        if (userId == null) {
+            throw new IllegalArgumentException("User ID cannot be null");
         }
+        Resume resume = resumeRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Resume not found for user id: " + userId));
+
+        s3Client.deleteObject(b -> b.bucket(resume.getS3Bucket()).key(resume.getS3Key()));
+        resumeRepository.delete(resume);
+    }
+
+    @Transactional
+    public String getPresignedDownloadUrl(UUID userId) {
+        if (userId == null) {
+            throw new IllegalArgumentException("User ID cannot be null");
+        }
+        String key = "resumes/" + userId + "/" + "active.pdf";
+        GetObjectRequest objectRequest = GetObjectRequest.builder()
+                .bucket(bucketName)
+                .key(key)
+                .build();
+
+        GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
+                .signatureDuration(Duration.ofMinutes(15))
+                .getObjectRequest(objectRequest)
+                .build();
+        return s3Presigner.presignGetObject(presignRequest).url().toString();
     }
 
 }

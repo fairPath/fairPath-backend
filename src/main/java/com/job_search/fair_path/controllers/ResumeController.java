@@ -11,10 +11,11 @@ import com.job_search.fair_path.dataTransferObject.ResumePresignUrlResponseDTO;
 import com.job_search.fair_path.entity.User;
 import com.job_search.fair_path.services.ResumeService;
 
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.multipart.MultipartFile;
 
 @RequestMapping("/resumes")
 @Controller
@@ -42,16 +43,20 @@ public class ResumeController {
 
     }
 
-    @PostMapping("/test-upload")
-    public ResponseEntity<?> testUpload(@RequestBody MultipartFile file, Authentication authentication) {
-        if (file == null) {
-            return ResponseEntity.badRequest().build();
-        }
+    @DeleteMapping("/delete")
+    public ResponseEntity<?> deleteResume(Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+        UUID userId = user.getId();
+        resumeService.deleteResume(userId);
+        return ResponseEntity.ok().build();
+    }
 
-        UUID userId = ((User) authentication.getPrincipal()).getId();
-        resumeService.upload(file, userId);
-
-        return ResponseEntity.ok("upload successful");
+    @GetMapping("/download")
+    public ResponseEntity<?> downloadResume(Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+        UUID userId = user.getId();
+        String presignedDownloadUrl = resumeService.getPresignedDownloadUrl(userId);
+        return ResponseEntity.ok(presignedDownloadUrl);
     }
 
 }
