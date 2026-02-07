@@ -3,6 +3,7 @@ package com.job_search.fair_path.config;
 import com.job_search.fair_path.services.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -16,6 +17,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -23,6 +25,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final HandlerExceptionResolver handlerExceptionResolver;
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
+    private static final String JWT_COOKIE_NAME = "authToken";
 
     public JwtAuthenticationFilter(
             JwtService jwtService,
@@ -41,14 +44,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
         // This method will handle all core logic of jwt auth filter for each http request
-        final String authHeader = request.getHeader("Authorization");
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        final String jwt = extractTokenFromCookie(request);
+        if (jwt == null) {
             filterChain.doFilter(request, response);
             return;
         }
         try {
             // Authenticating request and need to be stateless meaning each request must be treated as new one
-            final String jwt = authHeader.substring(7);
             final String userId = jwtService.extractUserId(jwt);
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -68,6 +70,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         } catch (Exception exception) {
             handlerExceptionResolver.resolveException(request, response, null, exception);
         }
+    }
+
+    /*
+     * Extracts JWT token from cookie
+     * JET token string or null if not found
+     */
+    private String extractTokenFromCookie(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null) {
+            return null;
+        }
+        return Arrays.stream(cookies)
+                .filter(cookie -> JWT_COOKIE_NAME.equals(cookie.getName()))
+                .map(Cookie::getValue)
+                .findFirst().orElse(null);
     }
 
 }
