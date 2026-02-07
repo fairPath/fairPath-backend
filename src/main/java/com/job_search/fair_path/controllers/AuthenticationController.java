@@ -1,21 +1,17 @@
 package com.job_search.fair_path.controllers;
 
-import com.job_search.fair_path.dataTransferObject.AuthUserDTO;
-import com.job_search.fair_path.dataTransferObject.LoginResponseDTO;
-import com.job_search.fair_path.dataTransferObject.RegisterUserDTO;
-import com.job_search.fair_path.dataTransferObject.VerifyUserDTO;
-import com.job_search.fair_path.dataTransferObject.ForgotPasswordDTO;
-import com.job_search.fair_path.dataTransferObject.UpdatePasswordDTO;
+import com.job_search.fair_path.dataTransferObject.*;
 import com.job_search.fair_path.entity.User;
 import com.job_search.fair_path.services.AuthenticationService;
 import com.job_search.fair_path.services.JwtService;
-
-import java.util.Map;
-
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 /*
 
@@ -51,9 +47,16 @@ public class AuthenticationController {
 
     // Post mapping for login
     @PostMapping("/login")
-    public ResponseEntity<LoginResponseDTO> authenticate(@RequestBody AuthUserDTO authUserDTO) {
+    public ResponseEntity<LoginResponseDTO> authenticate(@RequestBody AuthUserDTO authUserDTO, HttpServletResponse response) {
         User authenticateUser = authenticationService.authenticate(authUserDTO);
         String jwtToken = jwtService.generateToken(authenticateUser);
+        // Create cookie with the token
+        Cookie cookie = new Cookie("authToken", jwtToken);
+        cookie.setHttpOnly(true); // XSS protection
+        cookie.setSecure(true);
+        cookie.setPath("/"); // available for all paths
+        cookie.setMaxAge(24 * 60 * 60); // 24 hrs
+        response.addCookie(cookie);
         LoginResponseDTO loginResponse = new LoginResponseDTO(jwtToken, jwtService.getExpirationTime());
         return ResponseEntity.ok(loginResponse);
     }
