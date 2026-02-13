@@ -1,7 +1,6 @@
 package com.job_search.fair_path.services;
 
 import java.time.Duration;
-import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -14,7 +13,9 @@ import com.job_search.fair_path.repository.ResumeRepository;
 import jakarta.transaction.Transactional;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Exception;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
@@ -104,6 +105,34 @@ public class ResumeService {
                 .getObjectRequest(objectRequest)
                 .build();
         return s3Presigner.presignGetObject(presignRequest).url().toString();
+    }
+
+    @Transactional
+    public void confirmUpload(UUID resumeId, UUID userId) {
+        if (resumeId == null) {
+            throw new IllegalArgumentException("Resume ID cannot be null");
+        }
+        if (userId == null) {
+            throw new IllegalArgumentException("User ID cannot be null");
+        }
+
+        try {
+            //validate pdf exists in s3 before confirming in db
+            
+            Resume resume = resumeRepository.findByIdAndUserId(resumeId, userId)
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            "Resume not found for resume id: " + resumeId + " and user id: " + userId));
+             HeadObjectResponse head = s3Client.headObject(b -> b.bucket(resume.getS3Bucket()).key(resume.getS3Key()));
+            if(head.contentLength() <= 0) {
+                throw new IllegalStateException("Uploaded resume file is empty");
+            }
+            
+            resume.setStatus(Resume.Status.ACTIVE);
+            resumeRepository.save(resume);
+        } catch (S3Exception e) {
+            throw new RuntimeException("Failed to confirm resume upload", e);
+        }
+
     }
 
 }

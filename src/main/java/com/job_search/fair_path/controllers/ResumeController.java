@@ -43,6 +43,15 @@ public class ResumeController {
 
     }
 
+    @PostMapping("/confirm") 
+    public ResponseEntity<?> confirmUpload(@RequestBody UUID resumeId, Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+        UUID userId = user.getId();
+        resumeService.confirmUpload(resumeId, userId);
+        return ResponseEntity.ok().build();
+    }
+    
+
     @DeleteMapping("/delete")
     public ResponseEntity<?> deleteResume(Authentication authentication) {
         User user = (User) authentication.getPrincipal();
