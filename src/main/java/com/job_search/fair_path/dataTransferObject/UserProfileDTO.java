@@ -13,7 +13,7 @@ import lombok.Setter;
 public class UserProfileDTO {
     private String firstName;
     private String lastName;
-    String email;
+    private String email;
     private String username;
     private UUID resumeId;
     private String resumeFileName;
