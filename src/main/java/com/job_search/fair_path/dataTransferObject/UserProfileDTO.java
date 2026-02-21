@@ -13,8 +13,8 @@ import lombok.Setter;
 public class UserProfileDTO {
     private String firstName;
     private String lastName;
-    private String username;
     private String email;
+    private String username;
     private UUID resumeId;
     private String resumeFileName;
     private Instant resumeUpdatedAt;

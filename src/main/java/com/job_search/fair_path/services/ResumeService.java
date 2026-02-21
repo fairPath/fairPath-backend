@@ -1,19 +1,23 @@
 package com.job_search.fair_path.services;
 
+import java.time.Duration;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.job_search.fair_path.dataTransferObject.ResumePresignUrlResponseDTO;
 import com.job_search.fair_path.entity.Resume;
 import com.job_search.fair_path.repository.ResumeRepository;
 
-import software.amazon.awssdk.core.sync.RequestBody;
+import jakarta.transaction.Transactional;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Exception;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 
 @Service
@@ -73,20 +77,62 @@ public class ResumeService {
 
     }
 
-    public void upload(MultipartFile file, UUID userId) {
-        try {
-
-            String key = "resumes/" + userId + "/" + file.getOriginalFilename();
-            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-                    .bucket(bucketName)
-                    .key(key)
-                    .contentType(file.getContentType())
-                    .build();
-
-            s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to upload file", e);
+    @Transactional
+    public void deleteResume(UUID userId) {
+        if (userId == null) {
+            throw new IllegalArgumentException("User ID cannot be null");
         }
+        Resume resume = resumeRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Resume not found for user id: " + userId));
+
+        s3Client.deleteObject(b -> b.bucket(resume.getS3Bucket()).key(resume.getS3Key()));
+        resumeRepository.delete(resume);
+    }
+
+    @Transactional
+    public String getPresignedDownloadUrl(UUID userId) {
+        if (userId == null) {
+            throw new IllegalArgumentException("User ID cannot be null");
+        }
+        String key = "resumes/" + userId + "/" + "active.pdf";
+        GetObjectRequest objectRequest = GetObjectRequest.builder()
+                .bucket(bucketName)
+                .key(key)
+                .build();
+
+        GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
+                .signatureDuration(Duration.ofMinutes(15))
+                .getObjectRequest(objectRequest)
+                .build();
+        return s3Presigner.presignGetObject(presignRequest).url().toString();
+    }
+
+    @Transactional
+    public void confirmUpload(UUID resumeId, UUID userId) {
+        if (resumeId == null) {
+            throw new IllegalArgumentException("Resume ID cannot be null");
+        }
+        if (userId == null) {
+            throw new IllegalArgumentException("User ID cannot be null");
+        }
+
+        try {
+            //validate pdf exists in s3 before confirming in db
+            
+            Resume resume = resumeRepository.findByIdAndUserId(resumeId, userId)
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            "Resume not found for resume id: " + resumeId + " and user id: " + userId));
+             HeadObjectResponse head = s3Client.headObject(b -> b.bucket(resume.getS3Bucket()).key(resume.getS3Key()));
+            if(head.contentLength() <= 0) {
+                throw new IllegalStateException("Uploaded resume file is empty");
+            }
+            
+            resume.setStatus(Resume.Status.ACTIVE);
+            resumeRepository.save(resume);
+        } catch (S3Exception e) {
+            throw new RuntimeException("Failed to confirm resume upload", e);
+        }
+
     }
 
 }
