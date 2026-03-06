@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 
+import com.job_search.fair_path.dataTransferObject.ResumeConfirmRequestDTO;
 import com.job_search.fair_path.dataTransferObject.ResumePresignUrlRequestDTO;
 import com.job_search.fair_path.dataTransferObject.ResumePresignUrlResponseDTO;
 import com.job_search.fair_path.entity.User;
@@ -43,14 +44,13 @@ public class ResumeController {
 
     }
 
-    @PostMapping("/confirm") 
-    public ResponseEntity<?> confirmUpload(@RequestBody UUID resumeId, Authentication authentication) {
+    @PostMapping("/confirm")
+    public ResponseEntity<?> confirmUpload(@RequestBody ResumeConfirmRequestDTO request, Authentication authentication) {
         User user = (User) authentication.getPrincipal();
         UUID userId = user.getId();
-        resumeService.confirmUpload(resumeId, userId);
+        resumeService.confirmUpload(request.getResumeId(), userId);
         return ResponseEntity.ok().build();
     }
-    
 
     @DeleteMapping("/delete")
     public ResponseEntity<?> deleteResume(Authentication authentication) {
