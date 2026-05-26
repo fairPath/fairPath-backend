@@ -23,8 +23,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class ResumeController {
     private final ResumeService resumeService;
 
-    public ResumeController(ResumeService resumerService) {
-        this.resumeService = resumerService;
+    public ResumeController(ResumeService resumeService) {
+        this.resumeService = resumeService;
     }
 
     @PostMapping("/presign-url")
