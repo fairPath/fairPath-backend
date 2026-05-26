@@ -37,7 +37,7 @@ public class ResumeController {
                 UUID userId = user.getId();
                 ResumePresignUrlResponseDTO presignedUploadDTO = resumeService.createPresignUploadUrl(userId, filename);
                 return ResponseEntity.ok(presignedUploadDTO);
-            } catch (Error e) {
+            } catch (Exception e) {
                 return ResponseEntity.badRequest().build();
             }
         }
