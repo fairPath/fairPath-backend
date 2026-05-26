@@ -46,10 +46,14 @@ public class ResumeController {
 
     @PostMapping("/confirm")
     public ResponseEntity<?> confirmUpload(@RequestBody ResumeConfirmRequestDTO request, Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
-        UUID userId = user.getId();
-        resumeService.confirmUpload(request.getResumeId(), userId);
-        return ResponseEntity.ok().build();
+        try {
+            User user = (User) authentication.getPrincipal();
+            UUID userId = user.getId();
+            resumeService.confirmUpload(request.getResumeId(), userId);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @DeleteMapping("/delete")
